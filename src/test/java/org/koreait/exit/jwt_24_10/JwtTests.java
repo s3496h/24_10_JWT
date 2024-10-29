@@ -3,6 +3,8 @@ package org.koreait.exit.jwt_24_10;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.koreait.exit.jwt_24_10.base.jwt.JwtProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import javax.crypto.SecretKey;
@@ -10,6 +12,9 @@ import java.util.Base64;
 import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class JwtTests {
+    @Autowired
+    private JwtProvider jwtProvider;
+
     @Value("${custom.jwt.secretKey}")
     private String secretKeyPlain;
     @Test
@@ -24,6 +29,21 @@ class JwtTests {
         String keyBase64Encoded = Base64.getEncoder().encodeToString(secretKeyPlain.getBytes());
         // Base64 인코딩 된 키를 이용해서 SecretKey 객체를 만든다.
         SecretKey secretKey = Keys.hmacShaKeyFor(keyBase64Encoded.getBytes());
-        assertThat(secretKeyPlain).isNotNull();
+        assertThat(secretKey).isNotNull();
+    }
+    @Test
+    @DisplayName("JwtProvider 객체로 SecretKey 객체 생성")
+    void t3() {
+        SecretKey secretKey = jwtProvider.getSecretKey();
+
+        assertThat(secretKey).isNotNull();
+    }
+    @Test
+    @DisplayName("SecretKey 객체는 단 한번만 생성되어야 함.")
+    void t4() {
+        SecretKey secretKey1 = jwtProvider.getSecretKey();
+        SecretKey secretKey2 = jwtProvider.getSecretKey();
+
+        assertThat(secretKey1 == secretKey2).isTrue();
     }
 }
